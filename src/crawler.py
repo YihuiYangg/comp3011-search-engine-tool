@@ -101,6 +101,14 @@ class PoliteCrawler:
         seen: set[str] = set()
         for anchor in soup.find_all("a", href=True):
             absolute = self._normalise_url(urljoin(current_url, anchor["href"]))
+            parsed = urlparse(absolute)
+
+            # The login/logout links are not quote-content pages. Skipping them
+            # avoids unnecessary 404 warnings while keeping the crawler focused
+            # on pages that should be indexed for the coursework search tool.
+            if parsed.path.rstrip("/") in {"/login", "/logout"}:
+                continue
+
             if self._is_allowed(absolute) and absolute not in seen:
                 seen.add(absolute)
                 links.append(absolute)
